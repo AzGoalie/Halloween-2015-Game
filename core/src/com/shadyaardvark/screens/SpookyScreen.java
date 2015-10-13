@@ -1,5 +1,14 @@
 package com.shadyaardvark.screens;
 
+import static com.shadyaardvark.utils.Constants.DOWN_POSITION;
+import static com.shadyaardvark.utils.Constants.HIT_HEIGHT;
+import static com.shadyaardvark.utils.Constants.INTERVAL;
+import static com.shadyaardvark.utils.Constants.LEFT_POSITION;
+import static com.shadyaardvark.utils.Constants.OFF_SCREEN_Y;
+import static com.shadyaardvark.utils.Constants.RIGHT_POSITION;
+import static com.shadyaardvark.utils.Constants.START_HEIGHT;
+import static com.shadyaardvark.utils.Constants.UP_POSITION;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
@@ -15,15 +24,6 @@ import com.badlogic.gdx.utils.Array;
 import com.shadyaardvark.SpookyDDR;
 
 public class SpookyScreen implements Screen {
-    private final float LEFT_POSITION = 200;
-    private final float DOWN_POSITION = 300;
-    private final float UP_POSITION = 400;
-    private final float RIGHT_POSITION = 500;
-
-    private final float HIT_HEIGHT = 475;
-    private final float START_HEIGHT = -75;
-    private final float INTERVAL = .25f;
-
     private SpookyDDR game;
     private SpriteBatch batch;
     private BitmapFont font;
@@ -105,10 +105,9 @@ public class SpookyScreen implements Screen {
     private void update(float delta) {
         for (Sprite arrow : arrows) {
             arrow.setPosition(arrow.getX(), arrow.getY() + (arrowSpeed * delta));
-            if (arrow.getY() > 700) {
+            if (arrow.getY() > OFF_SCREEN_Y) {
                 arrows.removeValue(arrow, true);
                 combo = 0;
-                //arrow.setPosition(arrow.getX(), START_HEIGHT);
             }
         }
 
