@@ -20,29 +20,20 @@ import com.shadyaardvark.utils.Constants;
 
 public class SpookyScreen implements Screen {
     public static float arrowInterval = 1f;
-
     public static float nextArrowTime = 0;
-
     public static float lastAccuracy = 0;
-
     public static int score = 0;
-
     public static int combo = 0;
 
     private SpookyDDR game;
 
     private Stage stage;
-
     private SpriteBatch batch;
-
     private BitmapFont font;
 
     private Arrow leftHit;
-
     private Arrow downHit;
-
     private Arrow upHit;
-
     private Arrow rightHit;
 
     public SpookyScreen(SpookyDDR game) {

@@ -22,7 +22,7 @@ public class MovingArrow extends Arrow {
 
     public void update(float delta) {
         setPosition(getX(), getY() + (arrowSpeed * delta));
-        if (arrow.getY() > OFF_SCREEN_Y) {
+        if (getY() > OFF_SCREEN_Y) {
             arrows.removeValue(this, true);
             remove();
             SpookyScreen.combo = 0;
