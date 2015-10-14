@@ -45,7 +45,7 @@ public class Arrow extends Actor {
     }
 
     public Rectangle getBoundingRectangle() {
-        return new Rectangle(getX(), getY(), arrow.getRegionWidth(), arrow.getRegionHeight());
+        return new Rectangle(getX(), getY(), getWidth(), getHeight());
     }
 
     public Direction getDirection() {
