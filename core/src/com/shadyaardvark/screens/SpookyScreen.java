@@ -1,122 +1,94 @@
 package com.shadyaardvark.screens;
 
-import static com.shadyaardvark.utils.Constants.DOWN_POSITION;
 import static com.shadyaardvark.utils.Constants.HIT_HEIGHT;
 import static com.shadyaardvark.utils.Constants.INTERVAL;
-import static com.shadyaardvark.utils.Constants.LEFT_POSITION;
-import static com.shadyaardvark.utils.Constants.OFF_SCREEN_Y;
-import static com.shadyaardvark.utils.Constants.RIGHT_POSITION;
-import static com.shadyaardvark.utils.Constants.START_HEIGHT;
-import static com.shadyaardvark.utils.Constants.UP_POSITION;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.shadyaardvark.SpookyDDR;
+import com.shadyaardvark.entities.Arrow;
+import com.shadyaardvark.entities.MovingArrow;
+import com.shadyaardvark.utils.Constants;
 
 public class SpookyScreen implements Screen {
+    public static float arrowInterval = 1f;
+
+    public static float nextArrowTime = 0;
+
+    public static float lastAccuracy = 0;
+
+    public static int score = 0;
+
+    public static int combo = 0;
+
     private SpookyDDR game;
+
+    private Stage stage;
+
     private SpriteBatch batch;
+
     private BitmapFont font;
 
-    private Texture upArrow;
-    private Texture downArrow;
-    private Texture leftArrow;
-    private Texture rightArrow;
+    private Arrow leftHit;
 
-    private Sprite leftHit;
-    private Sprite downHit;
-    private Sprite upHit;
-    private Sprite rightHit;
+    private Arrow downHit;
 
-    private Array<Sprite> arrows;
-    private float arrowSpeed = 100;
-    private float arrowInterval = 1f;
-    private float nextArrowTime = 0;
-    private float lastAccuracy = 0;
-    private int score = 0;
-    private int combo = 0;
+    private Arrow upHit;
+
+    private Arrow rightHit;
 
     public SpookyScreen(SpookyDDR game) {
         this.game = game;
-        batch = new SpriteBatch();
-        arrows = new Array<Sprite>();
+        stage = new Stage(new ExtendViewport(Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT));
 
+        batch = new SpriteBatch();
         font = new BitmapFont();
 
         Gdx.input.setInputProcessor(new MyInputHandler());
 
-        upArrow = new Texture(Gdx.files.internal("arrowUp.png"));
-        downArrow = new Texture(Gdx.files.internal("arrowDown.png"));
-        leftArrow = new Texture(Gdx.files.internal("arrowLeft.png"));
-        rightArrow = new Texture(Gdx.files.internal("arrowRight.png"));
+        upHit = new Arrow(Arrow.Direction.UP);
+        downHit = new Arrow(Arrow.Direction.DOWN);
+        leftHit = new Arrow(Arrow.Direction.LEFT);
+        rightHit = new Arrow(Arrow.Direction.RIGHT);
 
-        upArrow.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        downArrow.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        leftArrow.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        rightArrow.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-
-        upHit = new Sprite(upArrow);
-        downHit = new Sprite(downArrow);
-        leftHit = new Sprite(leftArrow);
-        rightHit = new Sprite(rightArrow);
-
-        upHit.setAlpha(.5f);
-        downHit.setAlpha(.5f);
-        leftHit.setAlpha(.5f);
-        rightHit.setAlpha(.5f);
-
-        leftHit.setPosition(LEFT_POSITION, HIT_HEIGHT);
-        downHit.setPosition(DOWN_POSITION, HIT_HEIGHT);
-        upHit.setPosition(UP_POSITION, HIT_HEIGHT);
-        rightHit.setPosition(RIGHT_POSITION, HIT_HEIGHT);
+        stage.addActor(upHit);
+        stage.addActor(downHit);
+        stage.addActor(leftHit);
+        stage.addActor(rightHit);
     }
 
     private void spawnArrow() {
         int type = MathUtils.random(0, 3);
-        Sprite arrow;
+        MovingArrow arrow;
 
         if (type == 0) {
-            arrow = new Sprite(upArrow);
-            arrow.setPosition(UP_POSITION, START_HEIGHT);
+            arrow = new MovingArrow(Arrow.Direction.UP);
         } else if (type == 1) {
-            arrow = new Sprite(downArrow);
-            arrow.setPosition(DOWN_POSITION, START_HEIGHT);
+            arrow = new MovingArrow(Arrow.Direction.DOWN);
         } else if (type == 2) {
-            arrow = new Sprite(leftArrow);
-            arrow.setPosition(LEFT_POSITION, START_HEIGHT);
+            arrow = new MovingArrow(Arrow.Direction.LEFT);
         } else {
-            arrow = new Sprite(rightArrow);
-            arrow.setPosition(RIGHT_POSITION, START_HEIGHT);
+            arrow = new MovingArrow(Arrow.Direction.RIGHT);
         }
-
-        arrows.add(arrow);
+        stage.addActor(arrow);
     }
 
     private void update(float delta) {
-        for (Sprite arrow : arrows) {
-            arrow.setPosition(arrow.getX(), arrow.getY() + (arrowSpeed * delta));
-            if (arrow.getY() > OFF_SCREEN_Y) {
-                arrows.removeValue(arrow, true);
-                combo = 0;
-            }
-        }
-
         if (nextArrowTime <= 0) {
             spawnArrow();
             nextArrowTime = arrowInterval;
         }
-
         nextArrowTime -= delta;
+
+        stage.act(delta);
     }
 
     @Override
@@ -124,24 +96,14 @@ public class SpookyScreen implements Screen {
         Gdx.gl20.glClearColor(0, 0, 0, 1);
         Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        stage.draw();
+
         batch.begin();
-
-        batch.setColor(Color.DARK_GRAY);
-        leftHit.draw(batch);
-        downHit.draw(batch);
-        upHit.draw(batch);
-        rightHit.draw(batch);
-
-        batch.setColor(Color.WHITE);
-        for (Sprite arrow : arrows) {
-            arrow.draw(batch);
-        }
-
         font.draw(batch, "Accuracy: " + lastAccuracy, 25, 575);
         font.draw(batch, "Combo: " + combo, 25, 550);
         font.draw(batch, "Score: " + score, 675, 575);
         font.draw(batch, "Interval: " + arrowInterval, 675, 550);
-        font.draw(batch, "Speed: " + arrowSpeed, 675, 525);
+        font.draw(batch, "Speed: " + MovingArrow.arrowSpeed, 675, 525);
         batch.end();
 
         update(delta);
@@ -175,20 +137,16 @@ public class SpookyScreen implements Screen {
     @Override
     public void dispose() {
         batch.dispose();
-        upArrow.dispose();
-        downArrow.dispose();
-        leftArrow.dispose();
-        rightArrow.dispose();
+        stage.dispose();
     }
 
     private class MyInputHandler extends InputAdapter {
         @Override
         public boolean keyDown(int keycode) {
-
             switch (keycode) {
             case Input.Keys.LEFT:
-                for (Sprite s : arrows) {
-                    if (s.getX() == LEFT_POSITION && leftHit.getBoundingRectangle()
+                for (MovingArrow s : MovingArrow.arrows) {
+                    if (s.getDirection() == Arrow.Direction.LEFT && leftHit.getBoundingRectangle()
                             .overlaps(s.getBoundingRectangle())) {
                         arrowHit(s);
                     }
@@ -196,8 +154,8 @@ public class SpookyScreen implements Screen {
                 leftHit.setScale(1.25f);
                 break;
             case Input.Keys.RIGHT:
-                for (Sprite s : arrows) {
-                    if (s.getX() == RIGHT_POSITION && rightHit.getBoundingRectangle()
+                for (MovingArrow s : MovingArrow.arrows) {
+                    if (s.getDirection() == Arrow.Direction.RIGHT && rightHit.getBoundingRectangle()
                             .overlaps(s.getBoundingRectangle())) {
                         arrowHit(s);
                     }
@@ -205,8 +163,8 @@ public class SpookyScreen implements Screen {
                 rightHit.setScale(1.25f);
                 break;
             case Input.Keys.UP:
-                for (Sprite s : arrows) {
-                    if (s.getX() == UP_POSITION && upHit.getBoundingRectangle()
+                for (MovingArrow s : MovingArrow.arrows) {
+                    if (s.getDirection() == Arrow.Direction.UP && upHit.getBoundingRectangle()
                             .overlaps(s.getBoundingRectangle())) {
                         arrowHit(s);
                     }
@@ -214,8 +172,8 @@ public class SpookyScreen implements Screen {
                 upHit.setScale(1.25f);
                 break;
             case Input.Keys.DOWN:
-                for (Sprite s : arrows) {
-                    if (s.getX() == DOWN_POSITION && downHit.getBoundingRectangle()
+                for (MovingArrow s : MovingArrow.arrows) {
+                    if (s.getDirection() == Arrow.Direction.DOWN && downHit.getBoundingRectangle()
                             .overlaps(s.getBoundingRectangle())) {
                         arrowHit(s);
                     }
@@ -223,10 +181,10 @@ public class SpookyScreen implements Screen {
                 downHit.setScale(1.25f);
                 break;
             case Input.Keys.Z:
-                arrowSpeed += INTERVAL * 100;
+                MovingArrow.arrowSpeed += INTERVAL * 100;
                 break;
             case Input.Keys.X:
-                arrowSpeed -= INTERVAL * 100;
+                MovingArrow.arrowSpeed -= INTERVAL * 100;
                 break;
             case Input.Keys.A:
                 arrowInterval += INTERVAL;
@@ -259,7 +217,7 @@ public class SpookyScreen implements Screen {
             return super.keyDown(keycode);
         }
 
-        private void arrowHit(Sprite s) {
+        private void arrowHit(MovingArrow s) {
             lastAccuracy =
                     (HIT_HEIGHT < s.getY() ? HIT_HEIGHT / s.getY() : s.getY() / HIT_HEIGHT) * 100;
 
@@ -278,7 +236,7 @@ public class SpookyScreen implements Screen {
                 score += 50;
             }
 
-            arrows.removeValue(s, true);
+            s.destory();
         }
     }
 }

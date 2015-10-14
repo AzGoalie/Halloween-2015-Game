@@ -20,4 +20,6 @@ public class Constants {
     public static final float INTERVAL = .25f;
 
     public static final int OFF_SCREEN_Y = 700;
+
+    public static final float HIT_SCALE = 1.25f;
 }
